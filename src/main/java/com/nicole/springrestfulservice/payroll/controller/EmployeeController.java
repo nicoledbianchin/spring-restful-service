@@ -3,9 +3,15 @@ package com.nicole.springrestfulservice.payroll.controller;
 import com.nicole.springrestfulservice.payroll.exception.EmployeeNotFoundException;
 import com.nicole.springrestfulservice.payroll.models.Employee;
 import com.nicole.springrestfulservice.payroll.repository.EmployeeRepository;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 public class EmployeeController {
@@ -16,8 +22,14 @@ public class EmployeeController {
     }
 
     @GetMapping("/employees")
-    List<Employee> getAll() {
-        return repository.findAll();
+    List<EntityModel<Employee>> getAll() {
+        List<EntityModel<Employee>> employees = repository.findAll().stream()
+                .map(employee -> EntityModel.of(employee,
+                        linkTo(methodOn(EmployeeController.class).findById(employee.getId())).withSelfRel(),
+                        linkTo(methodOn(EmployeeController.class).getAll()).withRel("employees")))
+                .collect(Collectors.toList());
+
+        return CollectionModel.of(employees, linkTo(methodOn(EmployeeController.class).getAll()).withSelfRel());
     }
 
     @PostMapping("/employees")
@@ -26,9 +38,14 @@ public class EmployeeController {
     }
 
     @GetMapping("/employees/{id}")
-    Employee findById(@PathVariable Long id) {
-        return repository.findById(id)
-                .orElseThrow(() ->new EmployeeNotFoundException(id));
+    EntityModel<Employee> findById(@PathVariable Long id) {
+
+        Employee employee = repository.findById(id) //
+                .orElseThrow(() -> new EmployeeNotFoundException(id));
+
+        return EntityModel.of(employee, //
+                linkTo(methodOn(EmployeeController.class).findById(id)).withSelfRel(),
+                linkTo(methodOn(EmployeeController.class).getAll()).withRel("employees"));
     }
 
     @PutMapping("/employees/{id}")
