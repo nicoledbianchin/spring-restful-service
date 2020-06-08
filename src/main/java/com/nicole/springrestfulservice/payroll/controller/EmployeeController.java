@@ -2,6 +2,7 @@ package com.nicole.springrestfulservice.payroll.controller;
 
 import com.nicole.springrestfulservice.payroll.exception.EmployeeNotFoundException;
 import com.nicole.springrestfulservice.payroll.models.Employee;
+import com.nicole.springrestfulservice.payroll.models.EmployeeModelAssemble;
 import com.nicole.springrestfulservice.payroll.repository.EmployeeRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
@@ -17,16 +18,17 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 public class EmployeeController {
     private final EmployeeRepository repository;
 
-    EmployeeController(EmployeeRepository repository){
+    private final EmployeeModelAssemble assembler;
+
+    EmployeeController(EmployeeRepository repository, EmployeeModelAssemble assembler){
         this.repository = repository;
+        this.assembler = assembler;
     }
 
     @GetMapping("/employees")
     List<EntityModel<Employee>> getAll() {
         List<EntityModel<Employee>> employees = repository.findAll().stream()
-                .map(employee -> EntityModel.of(employee,
-                        linkTo(methodOn(EmployeeController.class).findById(employee.getId())).withSelfRel(),
-                        linkTo(methodOn(EmployeeController.class).getAll()).withRel("employees")))
+                .map(assembler::toModel)
                 .collect(Collectors.toList());
 
         return CollectionModel.of(employees, linkTo(methodOn(EmployeeController.class).getAll()).withSelfRel());
@@ -38,14 +40,12 @@ public class EmployeeController {
     }
 
     @GetMapping("/employees/{id}")
-    EntityModel<Employee> findById(@PathVariable Long id) {
+    public EntityModel<Employee> findById(@PathVariable Long id) {
 
         Employee employee = repository.findById(id) //
                 .orElseThrow(() -> new EmployeeNotFoundException(id));
 
-        return EntityModel.of(employee, //
-                linkTo(methodOn(EmployeeController.class).findById(id)).withSelfRel(),
-                linkTo(methodOn(EmployeeController.class).getAll()).withRel("employees"));
+        return assembler.toModel(employee);
     }
 
     @PutMapping("/employees/{id}")
