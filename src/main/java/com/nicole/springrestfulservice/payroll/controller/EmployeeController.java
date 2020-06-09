@@ -2,7 +2,7 @@ package com.nicole.springrestfulservice.payroll.controller;
 
 import com.nicole.springrestfulservice.payroll.exception.EmployeeNotFoundException;
 import com.nicole.springrestfulservice.payroll.models.Employee;
-import com.nicole.springrestfulservice.payroll.models.EmployeeModelAssemble;
+import com.nicole.springrestfulservice.payroll.models.assembler.EmployeeModelAssemble;
 import com.nicole.springrestfulservice.payroll.repository.EmployeeRepository;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;

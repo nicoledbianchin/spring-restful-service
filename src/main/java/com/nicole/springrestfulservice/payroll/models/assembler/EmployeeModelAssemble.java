@@ -1,6 +1,7 @@
-package com.nicole.springrestfulservice.payroll.models;
+package com.nicole.springrestfulservice.payroll.models.assembler;
 
 import com.nicole.springrestfulservice.payroll.controller.EmployeeController;
+import com.nicole.springrestfulservice.payroll.models.Employee;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
