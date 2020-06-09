@@ -71,4 +71,21 @@ public class OrderController {
                         .withTitle("Method not allowed") //
                         .withDetail("You can't cancel an order that is in the " + order.getStatus() + " status"));
     }
+
+    @PutMapping("/orders/{id}/complete")
+    ResponseEntity<?> complete(@PathVariable Long id) {
+        Order order = orderRepository.findById(id).orElseThrow(() -> new OrderNotFoundException(id));
+
+        if(order.getStatus() == Status.IN_PROGRESS) {
+            order.setStatus(Status.COMPLETED);
+            return ResponseEntity.ok(assembler.toModel(orderRepository.save(order)));
+        }
+
+        return ResponseEntity
+                .status(HttpStatus.METHOD_NOT_ALLOWED)
+                .header(HttpHeaders.CONTENT_TYPE, MediaTypes.HTTP_PROBLEM_DETAILS_JSON_VALUE)
+                .body(Problem.create()
+                    .withTitle("Method not allowed")
+                    .withBody("You can'' complete and order that is in the " + order.getStatus() + " status"));
+    }
 }
